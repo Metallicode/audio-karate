@@ -2,6 +2,7 @@
   "manifest_version": 3,
   "name": "Audio Kkarate: Compressor & EQ",
   "version": "1.0",
+  "description": "Advanced Audio Compression & EQ.",
   "permissions": ["activeTab", "scripting"],
   "action": {
     "default_popup": "popup.html",
