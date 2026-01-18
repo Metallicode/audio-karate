@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { width: 320px; background: #222; color: #fff; font-family: 'Segoe UI', sans-serif; padding: 15px; }
+    
+    /* Header & Bypass */
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    h3 { margin: 0; color: #ff9f43; font-size: 16px; }
+    
+    .bypass-label { font-size: 11px; color: #aaa; display: flex; align-items: center; gap: 5px; cursor: pointer; }
+    input[type="checkbox"] { accent-color: #ff9f43; }
+
+    /* The Meter (Visualizer) */
+    .meter-container {
+      height: 8px; background: #111; border-radius: 4px; overflow: hidden; margin-bottom: 20px;
+      border: 1px solid #333; position: relative;
+    }
+    .meter-bar {
+      height: 100%; width: 0%; background: linear-gradient(90deg, #ff9f43, #ff4757);
+      transition: width 0.05s linear; /* Smooth movement */
+      float: right; /* Gain Reduction moves Right to Left */
+    }
+    .meter-label { font-size: 9px; color: #555; text-align: right; margin-top: -3px; margin-bottom: 10px;}
+
+    /* Mode Buttons */
+    .modes { display: flex; gap: 5px; margin-bottom: 15px; }
+    .mode-btn { flex: 1; padding: 8px; background: #333; border: 1px solid #444; color: #aaa; cursor: pointer; border-radius: 4px; font-size: 12px;}
+    .mode-btn.active { background: #ff9f43; color: #000; font-weight: bold; }
+    
+    /* Sliders */
+    .control-group { margin-bottom: 12px; }
+    label { display: flex; justify-content: space-between; font-size: 12px; color: #ccc; margin-bottom: 4px; }
+    input[type=range] { width: 100%; accent-color: #ff9f43; cursor: pointer; }
+    
+    /* Toggles */
+    .toggles { display: flex; gap: 10px; margin-bottom: 15px; }
+    .toggle-label { display: flex; align-items: center; gap: 5px; font-size: 12px; cursor: pointer; }
+    
+    /* Advanced */
+    #advanced-btn { width: 100%; background: none; border: none; color: #777; font-size: 11px; cursor: pointer; padding: 5px; text-decoration: underline; }
+    #advanced-controls { display: none; margin-top: 10px; border-top: 1px solid #444; padding-top: 10px; }
+    .val-display { color: #ff9f43; }
+
+    /* Bypass State */
+    body.bypassed .meter-bar { width: 0 !important; }
+    body.bypassed .modes, body.bypassed .control-group, body.bypassed .toggles { opacity: 0.3; pointer-events: none; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h3>Audio Master 🎚️</h3>
+    <label class="bypass-label">
+      <input type="checkbox" id="bypassBtn"> BYPASS
+    </label>
+  </div>
+
+  <div class="meter-container">
+    <div class="meter-bar" id="gr-meter"></div>
+  </div>
+  <div class="meter-label">GAIN REDUCTION</div>
+
+  <div class="modes">
+    <button class="mode-btn" id="mode-music">Music</button>
+    <button class="mode-btn active" id="mode-movie">Movie</button>
+    <button class="mode-btn" id="mode-speech">Speech</button>
+  </div>
+
+  <div class="control-group">
+    <label>Volume Boost <span id="boost-val" class="val-display">0 dB</span></label>
+    <input type="range" id="preGain" min="0" max="20" value="0" step="1">
+  </div>
+
+  <div class="toggles">
+    <label class="toggle-label"><input type="checkbox" id="hpFilter" checked> 80Hz Cut</label>
+    <label class="toggle-label"><input type="checkbox" id="deEsser" checked> De-Esser</label>
+  </div>
+
+  <button id="advanced-btn">Show Advanced Settings ▼</button>
+  
+  <div id="advanced-controls">
+    <div class="control-group">
+      <label>Threshold <span id="thresh-val" class="val-display">-24 dB</span></label>
+      <input type="range" id="threshold" min="-60" max="0" value="-24">
+    </div>
+    <div class="control-group">
+      <label>Ratio <span id="ratio-val" class="val-display">4:1</span></label>
+      <input type="range" id="ratio" min="1" max="20" step="0.5" value="4">
+    </div>
+    <div class="control-group">
+      <label>Attack <span id="attack-val" class="val-display">0.003s</span></label>
+      <input type="range" id="attack" min="0" max="1" step="0.001" value="0.003">
+    </div>
+    <div class="control-group">
+      <label>Release <span id="release-val" class="val-display">0.25s</span></label>
+      <input type="range" id="release" min="0" max="1" step="0.01" value="0.25">
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
