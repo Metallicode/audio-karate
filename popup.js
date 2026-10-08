@@ -9,8 +9,8 @@ const presets = {
     music: { threshold: -10, ratio: 2, attack: 0.1, release: 0.5, hpFilter: false, deEsser: false, deEssThreshold: -30 }
 };
 
-// Sub bass and exciter aren't part of the presets, they depend on the speakers and taste rather than the content
-const defaults = { mode: 'movie', bypass: false, preGain: 0, subBoost: 0, subFreq: 50, exciterAmount: 0, exciterFreq: 3000, ...presets.movie };
+// Mono, sub bass and exciter aren't part of the presets, they depend on the speakers and taste rather than the content
+const defaults = { mode: 'movie', bypass: false, preGain: 0, mono: false, subBoost: 0, subFreq: 50, exciterAmount: 0, exciterFreq: 3000, ...presets.movie };
 const STORAGE_KEY = 'audioKarate.lastSettings';
 
 let tabId = null;
@@ -23,7 +23,7 @@ async function init() {
     try {
         await chrome.scripting.executeScript({
             target: { tabId: tab.id, allFrames: true },
-            files: ['compressor-makeup.js', 'de-esser.js', 'exciter.js', 'sub-bass.js', 'limiter.js', 'audio-engine.js']
+            files: ['compressor-makeup.js', 'de-esser.js', 'exciter.js', 'sub-bass.js', 'mono.js', 'limiter.js', 'audio-engine.js']
         });
     } catch (e) {
         // chrome:// pages, the Web Store, and other pages extensions can't touch
@@ -78,6 +78,7 @@ function setupListeners() {
         document.getElementById(id).addEventListener('input', onCustomChange);
     });
     document.getElementById('hpFilter').addEventListener('change', onCustomChange);
+    document.getElementById('mono').addEventListener('change', updateAudioEngine);
     document.getElementById('deEsser').addEventListener('change', (e) => {
         document.body.classList.toggle('deess-off', !e.target.checked);
         onCustomChange();
@@ -106,6 +107,7 @@ function applyToUI(s) {
     document.getElementById('release').value = s.release;
     document.getElementById('hpFilter').checked = s.hpFilter;
     document.getElementById('deEsser').checked = s.deEsser;
+    document.getElementById('mono').checked = s.mono;
     document.getElementById('deEssThreshold').value = s.deEssThreshold;
     document.getElementById('subBoost').value = s.subBoost;
     document.getElementById('subFreq').value = s.subFreq;
@@ -142,6 +144,7 @@ function readSettings() {
         release: parseFloat(document.getElementById('release').value),
         hpFilter: document.getElementById('hpFilter').checked,
         deEsser: document.getElementById('deEsser').checked,
+        mono: document.getElementById('mono').checked,
         deEssThreshold: parseFloat(document.getElementById('deEssThreshold').value),
         subBoost: document.getElementById('subBoost').value,
         subFreq: document.getElementById('subFreq').value,

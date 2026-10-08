@@ -29,6 +29,7 @@
 
         nodes.exciter = window.createAudioKarateExciter(context);
         nodes.subBass = window.createAudioKarateSubBass(context);
+        nodes.mono = window.createAudioKarateMono(context);
         nodes.limiter = window.createAudioKarateLimiter(context);
 
         // Chain
@@ -37,7 +38,8 @@
         nodes.deEsser.output.connect(nodes.compressor);
         nodes.compressor.connect(nodes.exciter.input);
         nodes.exciter.output.connect(nodes.subBass.input);
-        nodes.subBass.output.connect(nodes.limiter.input);
+        nodes.subBass.output.connect(nodes.mono.input);
+        nodes.mono.output.connect(nodes.limiter.input);
         nodes.limiter.output.connect(context.destination);
     }
 
@@ -148,6 +150,7 @@
             n.deEsser.set(false, s.deEssThreshold, instant); // Off
             n.exciter.set(0, s.exciterFreq, instant); // Off
             n.subBass.set(0, s.subFreq, instant); // Off
+            n.mono.set(false, instant); // Stereo
             n.limiter.set(false, instant); // Off
             set(n.compressor.threshold, 0); // No compression
             set(n.compressor.ratio, 1); // 1:1 ratio
@@ -160,6 +163,7 @@
             n.deEsser.set(s.deEsser, s.deEssThreshold, instant);
             n.exciter.set(s.exciterAmount, s.exciterFreq, instant);
             n.subBass.set(s.subBoost, s.subFreq, instant);
+            n.mono.set(s.mono, instant);
             n.limiter.set(s.subBoost > 0 || s.exciterAmount > 0, instant);
             set(n.compressor.threshold, s.threshold);
             set(n.compressor.ratio, s.ratio);
