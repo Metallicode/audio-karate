@@ -9,7 +9,8 @@ const presets = {
     music: { threshold: -10, ratio: 2, attack: 0.1, release: 0.5, hpFilter: false, deEsser: false, deEssThreshold: -30 }
 };
 
-const defaults = { mode: 'movie', bypass: false, preGain: 0, ...presets.movie };
+// Sub bass isn't part of the presets, it depends on the speakers rather than the content
+const defaults = { mode: 'movie', bypass: false, preGain: 0, subBoost: 0, subFreq: 50, ...presets.movie };
 const STORAGE_KEY = 'audioKarate.lastSettings';
 
 let tabId = null;
@@ -22,7 +23,7 @@ async function init() {
     try {
         await chrome.scripting.executeScript({
             target: { tabId: tab.id, allFrames: true },
-            files: ['de-esser.js', 'audio-engine.js']
+            files: ['compressor-makeup.js', 'de-esser.js', 'sub-bass.js', 'audio-engine.js']
         });
     } catch (e) {
         // chrome:// pages, the Web Store, and other pages extensions can't touch
@@ -42,6 +43,9 @@ async function init() {
 }
 
 function setupListeners() {
+    makeKnob(document.getElementById('subBoost'), formatSubBoost);
+    makeKnob(document.getElementById('subFreq'), v => v + ' Hz');
+
     // Bypass Logic
     document.getElementById('bypassBtn').addEventListener('change', (e) => {
         document.body.classList.toggle('bypassed', e.target.checked);
@@ -59,7 +63,9 @@ function setupListeners() {
         e.target.innerText = show ? 'Hide Advanced Settings ▲' : 'Show Advanced Settings ▼';
     });
 
-    document.getElementById('preGain').addEventListener('input', updateAudioEngine);
+    ['preGain', 'subBoost', 'subFreq'].forEach(id => {
+        document.getElementById(id).addEventListener('input', updateAudioEngine);
+    });
 
     // Anything a preset controls switches the mode to custom once it's tweaked by hand
     const onCustomChange = () => {
@@ -99,6 +105,8 @@ function applyToUI(s) {
     document.getElementById('hpFilter').checked = s.hpFilter;
     document.getElementById('deEsser').checked = s.deEsser;
     document.getElementById('deEssThreshold').value = s.deEssThreshold;
+    document.getElementById('subBoost').value = s.subBoost;
+    document.getElementById('subFreq').value = s.subFreq;
     document.body.classList.toggle('deess-off', !s.deEsser);
     setMode(s.mode);
     updateLabels();
@@ -111,6 +119,10 @@ function updateLabels() {
     document.getElementById('attack-val').innerText = document.getElementById('attack').value + 's';
     document.getElementById('release-val').innerText = document.getElementById('release').value + 's';
     document.getElementById('deess-val').innerText = document.getElementById('deEssThreshold').value + ' dB';
+    const subBoost = document.getElementById('subBoost').value;
+    document.getElementById('subBoost-val').innerText = formatSubBoost(subBoost);
+    document.getElementById('subFreq-val').innerText = document.getElementById('subFreq').value + ' Hz';
+    document.getElementById('hp-label').innerText = subBoost > 0 ? '20Hz Rumble Cut' : '80Hz Cut';
 }
 
 function readSettings() {
@@ -124,8 +136,14 @@ function readSettings() {
         release: parseFloat(document.getElementById('release').value),
         hpFilter: document.getElementById('hpFilter').checked,
         deEsser: document.getElementById('deEsser').checked,
-        deEssThreshold: parseFloat(document.getElementById('deEssThreshold').value)
+        deEssThreshold: parseFloat(document.getElementById('deEssThreshold').value),
+        subBoost: document.getElementById('subBoost').value,
+        subFreq: document.getElementById('subFreq').value
     };
+}
+
+function formatSubBoost(v) {
+    return v > 0 ? '+' + v + ' dB' : '0 dB';
 }
 
 function loadLastSettings() {

@@ -48,6 +48,19 @@
     body.bypassed .modes, body.bypassed .control-group, body.bypassed .toggles { opacity: 0.3; pointer-events: none; }
     body.deess-off #deess-group { opacity: 0.3; pointer-events: none; }
 
+    /* Sub Bass Knobs */
+    .section-label { font-size: 10px; color: #777; letter-spacing: 1px; margin: 4px 0 8px; }
+    .knobs { display: flex; justify-content: space-around; }
+    .knob-group { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 11px; color: #ccc; }
+    .knob { width: 48px; height: 48px; cursor: ns-resize; touch-action: none; border-radius: 50%; outline: none; }
+    .knob:focus-visible { box-shadow: 0 0 0 2px #ff9f43; }
+    .knob svg { display: block; width: 100%; height: 100%; }
+    .knob-track, .knob-fill { fill: none; stroke-width: 4; stroke-linecap: round; }
+    .knob-track { stroke: #444; }
+    .knob-fill { stroke: #ff9f43; }
+    .knob-cap { fill: #333; stroke: #555; }
+    .knob-pointer { stroke: #fff; stroke-width: 2.5; stroke-linecap: round; }
+
     /* Status (no media found, page not supported...) */
     #status { display: none; font-size: 11px; color: #aaa; background: #2c2c2c; border-left: 2px solid #ff9f43; padding: 6px 8px; margin-bottom: 15px; }
 
@@ -85,7 +98,7 @@
   </div>
 
   <div class="toggles">
-    <label class="toggle-label"><input type="checkbox" id="hpFilter" checked> 80Hz Cut</label>
+    <label class="toggle-label"><input type="checkbox" id="hpFilter" checked> <span id="hp-label">80Hz Cut</span></label>
     <label class="toggle-label"><input type="checkbox" id="deEsser" checked> De-Esser</label>
   </div>
 
@@ -112,8 +125,22 @@
       <label>De-Esser Threshold <span id="deess-val" class="val-display">-30 dB</span></label>
       <input type="range" id="deEssThreshold" min="-50" max="-10" value="-30">
     </div>
+    <div class="control-group">
+      <div class="section-label">SUB BASS (FULL-RANGE SYSTEMS)</div>
+      <div class="knobs">
+        <div class="knob-group">
+          <div class="knob" id="subBoost" aria-label="Sub bass boost" data-min="0" data-max="12" data-step="0.5" data-default="0"></div>
+          Boost <span id="subBoost-val" class="val-display">0 dB</span>
+        </div>
+        <div class="knob-group">
+          <div class="knob" id="subFreq" aria-label="Sub bass frequency" data-min="30" data-max="100" data-step="1" data-default="50"></div>
+          Frequency <span id="subFreq-val" class="val-display">50 Hz</span>
+        </div>
+      </div>
+    </div>
   </div>
 
+  <script src="knob.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

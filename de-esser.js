@@ -10,38 +10,6 @@ window.createAudioKarateDeEsser = window.createAudioKarateDeEsser || (function()
     const RELEASE = 0.08;
     const TIME_CONSTANT = 0.1;
 
-    // DynamicsCompressorNode adds automatic makeup gain that depends on its threshold, ratio and knee.
-    // Left alone it would boost the high band, so it's measured once per threshold and cancelled out.
-    const makeupCache = new Map();
-
-    function measureMakeup(threshold) {
-        if (!makeupCache.has(threshold)) {
-            const ctx = new OfflineAudioContext(1, 12000, 48000);
-            const osc = ctx.createOscillator();
-            osc.frequency.value = 8000; // In the band the compressor actually sees
-            const quiet = ctx.createGain();
-            quiet.gain.value = 0.001; // -60 dB, below any threshold the popup offers
-            const compressor = ctx.createDynamicsCompressor();
-            compressor.threshold.value = threshold;
-            compressor.ratio.value = RATIO;
-            compressor.knee.value = KNEE;
-            compressor.attack.value = ATTACK;
-            compressor.release.value = RELEASE;
-            osc.connect(quiet).connect(compressor).connect(ctx.destination);
-            osc.start();
-
-            makeupCache.set(threshold, ctx.startRendering().then(buffer => {
-                // Compare RMS over the second half, once the detector has settled
-                const data = buffer.getChannelData(0);
-                let sum = 0;
-                for (let i = data.length / 2; i < data.length; i++) sum += data[i] * data[i];
-                const inputRms = 0.001 / Math.SQRT2;
-                return Math.sqrt(sum / (data.length / 2)) / inputRms;
-            }));
-        }
-        return makeupCache.get(threshold);
-    }
-
     return function createDeEsser(context) {
         const input = context.createGain();
         const output = context.createGain();
@@ -78,7 +46,9 @@ window.createAudioKarateDeEsser = window.createAudioKarateDeEsser || (function()
 
         async function set(enabled, threshold, instant) {
             const request = ++latestRequest;
-            const makeup = enabled ? await measureMakeup(threshold) : 1;
+            const makeup = enabled
+                ? await window.measureAudioKarateMakeup({ threshold, ratio: RATIO, knee: KNEE, attack: ATTACK, release: RELEASE }, 8000)
+                : 1;
             if (request !== latestRequest) return; // A newer change arrived while measuring
 
             const now = context.currentTime;
