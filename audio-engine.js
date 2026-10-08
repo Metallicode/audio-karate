@@ -27,14 +27,18 @@
         nodes.compressor = context.createDynamicsCompressor();
         nodes.compressor.knee.value = 10;
 
+        nodes.exciter = window.createAudioKarateExciter(context);
         nodes.subBass = window.createAudioKarateSubBass(context);
+        nodes.limiter = window.createAudioKarateLimiter(context);
 
         // Chain
         nodes.hpFilter.connect(nodes.preGain);
         nodes.preGain.connect(nodes.deEsser.input);
         nodes.deEsser.output.connect(nodes.compressor);
-        nodes.compressor.connect(nodes.subBass.input);
-        nodes.subBass.output.connect(context.destination);
+        nodes.compressor.connect(nodes.exciter.input);
+        nodes.exciter.output.connect(nodes.subBass.input);
+        nodes.subBass.output.connect(nodes.limiter.input);
+        nodes.limiter.output.connect(context.destination);
     }
 
     // Web Audio outputs silence for media from another origin that wasn't loaded with CORS,
@@ -142,7 +146,9 @@
             set(n.preGain.gain, 1); // 0dB
             set(n.hpFilter.frequency, 0); // Off
             n.deEsser.set(false, s.deEssThreshold, instant); // Off
+            n.exciter.set(0, s.exciterFreq, instant); // Off
             n.subBass.set(0, s.subFreq, instant); // Off
+            n.limiter.set(false, instant); // Off
             set(n.compressor.threshold, 0); // No compression
             set(n.compressor.ratio, 1); // 1:1 ratio
         } else {
@@ -152,7 +158,9 @@
             // With sub boost on, the low cut drops to a rumble filter so it doesn't remove the boosted bass
             set(n.hpFilter.frequency, s.hpFilter ? (s.subBoost > 0 ? 20 : 80) : 0);
             n.deEsser.set(s.deEsser, s.deEssThreshold, instant);
+            n.exciter.set(s.exciterAmount, s.exciterFreq, instant);
             n.subBass.set(s.subBoost, s.subFreq, instant);
+            n.limiter.set(s.subBoost > 0 || s.exciterAmount > 0, instant);
             set(n.compressor.threshold, s.threshold);
             set(n.compressor.ratio, s.ratio);
             set(n.compressor.attack, s.attack);

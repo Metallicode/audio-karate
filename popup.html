@@ -50,6 +50,8 @@
 
     /* Sub Bass Knobs */
     .section-label { font-size: 10px; color: #777; letter-spacing: 1px; margin: 4px 0 8px; }
+    .knob-sections { display: flex; justify-content: space-between; }
+    .knob-section { flex: 1; text-align: center; }
     .knobs { display: flex; justify-content: space-around; }
     .knob-group { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 11px; color: #ccc; }
     .knob { width: 48px; height: 48px; cursor: ns-resize; touch-action: none; border-radius: 50%; outline: none; }
@@ -125,16 +127,31 @@
       <label>De-Esser Threshold <span id="deess-val" class="val-display">-30 dB</span></label>
       <input type="range" id="deEssThreshold" min="-50" max="-10" value="-30">
     </div>
-    <div class="control-group">
-      <div class="section-label">SUB BASS (FULL-RANGE SYSTEMS)</div>
-      <div class="knobs">
-        <div class="knob-group">
-          <div class="knob" id="subBoost" aria-label="Sub bass boost" data-min="0" data-max="12" data-step="0.5" data-default="0"></div>
-          Boost <span id="subBoost-val" class="val-display">0 dB</span>
+    <div class="control-group knob-sections">
+      <div class="knob-section" title="For full-range systems with subwoofers">
+        <div class="section-label">SUB BASS</div>
+        <div class="knobs">
+          <div class="knob-group">
+            <div class="knob" id="subBoost" aria-label="Sub bass boost" data-min="0" data-max="12" data-step="0.5" data-default="0"></div>
+            Boost <span id="subBoost-val" class="val-display">0 dB</span>
+          </div>
+          <div class="knob-group">
+            <div class="knob" id="subFreq" aria-label="Sub bass frequency" data-min="30" data-max="100" data-step="1" data-default="50"></div>
+            Freq <span id="subFreq-val" class="val-display">50 Hz</span>
+          </div>
         </div>
-        <div class="knob-group">
-          <div class="knob" id="subFreq" aria-label="Sub bass frequency" data-min="30" data-max="100" data-step="1" data-default="50"></div>
-          Frequency <span id="subFreq-val" class="val-display">50 Hz</span>
+      </div>
+      <div class="knob-section" title="Adds harmonics above the tune frequency for presence and air">
+        <div class="section-label">EXCITER</div>
+        <div class="knobs">
+          <div class="knob-group">
+            <div class="knob" id="exciterAmount" aria-label="Exciter amount" data-min="0" data-max="100" data-step="1" data-default="0"></div>
+            Amount <span id="exciterAmount-val" class="val-display">0%</span>
+          </div>
+          <div class="knob-group">
+            <div class="knob" id="exciterFreq" aria-label="Exciter tune frequency" data-min="1000" data-max="8000" data-step="100" data-default="3000"></div>
+            Tune <span id="exciterFreq-val" class="val-display">3.0 kHz</span>
+          </div>
         </div>
       </div>
     </div>

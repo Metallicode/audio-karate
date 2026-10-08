@@ -9,8 +9,8 @@ const presets = {
     music: { threshold: -10, ratio: 2, attack: 0.1, release: 0.5, hpFilter: false, deEsser: false, deEssThreshold: -30 }
 };
 
-// Sub bass isn't part of the presets, it depends on the speakers rather than the content
-const defaults = { mode: 'movie', bypass: false, preGain: 0, subBoost: 0, subFreq: 50, ...presets.movie };
+// Sub bass and exciter aren't part of the presets, they depend on the speakers and taste rather than the content
+const defaults = { mode: 'movie', bypass: false, preGain: 0, subBoost: 0, subFreq: 50, exciterAmount: 0, exciterFreq: 3000, ...presets.movie };
 const STORAGE_KEY = 'audioKarate.lastSettings';
 
 let tabId = null;
@@ -23,7 +23,7 @@ async function init() {
     try {
         await chrome.scripting.executeScript({
             target: { tabId: tab.id, allFrames: true },
-            files: ['compressor-makeup.js', 'de-esser.js', 'sub-bass.js', 'audio-engine.js']
+            files: ['compressor-makeup.js', 'de-esser.js', 'exciter.js', 'sub-bass.js', 'limiter.js', 'audio-engine.js']
         });
     } catch (e) {
         // chrome:// pages, the Web Store, and other pages extensions can't touch
@@ -45,6 +45,8 @@ async function init() {
 function setupListeners() {
     makeKnob(document.getElementById('subBoost'), formatSubBoost);
     makeKnob(document.getElementById('subFreq'), v => v + ' Hz');
+    makeKnob(document.getElementById('exciterAmount'), v => v + '%');
+    makeKnob(document.getElementById('exciterFreq'), formatKHz);
 
     // Bypass Logic
     document.getElementById('bypassBtn').addEventListener('change', (e) => {
@@ -63,7 +65,7 @@ function setupListeners() {
         e.target.innerText = show ? 'Hide Advanced Settings ▲' : 'Show Advanced Settings ▼';
     });
 
-    ['preGain', 'subBoost', 'subFreq'].forEach(id => {
+    ['preGain', 'subBoost', 'subFreq', 'exciterAmount', 'exciterFreq'].forEach(id => {
         document.getElementById(id).addEventListener('input', updateAudioEngine);
     });
 
@@ -107,6 +109,8 @@ function applyToUI(s) {
     document.getElementById('deEssThreshold').value = s.deEssThreshold;
     document.getElementById('subBoost').value = s.subBoost;
     document.getElementById('subFreq').value = s.subFreq;
+    document.getElementById('exciterAmount').value = s.exciterAmount;
+    document.getElementById('exciterFreq').value = s.exciterFreq;
     document.body.classList.toggle('deess-off', !s.deEsser);
     setMode(s.mode);
     updateLabels();
@@ -122,6 +126,8 @@ function updateLabels() {
     const subBoost = document.getElementById('subBoost').value;
     document.getElementById('subBoost-val').innerText = formatSubBoost(subBoost);
     document.getElementById('subFreq-val').innerText = document.getElementById('subFreq').value + ' Hz';
+    document.getElementById('exciterAmount-val').innerText = document.getElementById('exciterAmount').value + '%';
+    document.getElementById('exciterFreq-val').innerText = formatKHz(document.getElementById('exciterFreq').value);
     document.getElementById('hp-label').innerText = subBoost > 0 ? '20Hz Rumble Cut' : '80Hz Cut';
 }
 
@@ -138,8 +144,14 @@ function readSettings() {
         deEsser: document.getElementById('deEsser').checked,
         deEssThreshold: parseFloat(document.getElementById('deEssThreshold').value),
         subBoost: document.getElementById('subBoost').value,
-        subFreq: document.getElementById('subFreq').value
+        subFreq: document.getElementById('subFreq').value,
+        exciterAmount: document.getElementById('exciterAmount').value,
+        exciterFreq: document.getElementById('exciterFreq').value
     };
+}
+
+function formatKHz(v) {
+    return (v / 1000).toFixed(1) + ' kHz';
 }
 
 function formatSubBoost(v) {
