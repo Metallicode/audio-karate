@@ -46,12 +46,20 @@
     /* Bypass State */
     body.bypassed .meter-bar { width: 0 !important; }
     body.bypassed .modes, body.bypassed .control-group, body.bypassed .toggles { opacity: 0.3; pointer-events: none; }
+
+    /* Status (no media found, page not supported...) */
+    #status { display: none; font-size: 11px; color: #aaa; background: #2c2c2c; border-left: 2px solid #ff9f43; padding: 6px 8px; margin-bottom: 15px; }
+
+    /* Unsupported page */
+    body.unavailable .meter-container, body.unavailable .meter-label, body.unavailable .modes,
+    body.unavailable .control-group, body.unavailable .toggles, body.unavailable #advanced-btn,
+    body.unavailable .bypass-label { display: none; }
   </style>
 </head>
 <body>
 
   <div class="header">
-    <h3>Audio Master 🎚️</h3>
+    <h3>Audio Karate 🎚️</h3>
     <label class="bypass-label">
       <input type="checkbox" id="bypassBtn"> BYPASS
     </label>
@@ -61,6 +69,8 @@
     <div class="meter-bar" id="gr-meter"></div>
   </div>
   <div class="meter-label">GAIN REDUCTION</div>
+
+  <div id="status"></div>
 
   <div class="modes">
     <button class="mode-btn" id="mode-music">Music</button>
@@ -90,8 +100,8 @@
       <input type="range" id="ratio" min="1" max="20" step="0.5" value="4">
     </div>
     <div class="control-group">
-      <label>Attack <span id="attack-val" class="val-display">0.003s</span></label>
-      <input type="range" id="attack" min="0" max="1" step="0.001" value="0.003">
+      <label>Attack <span id="attack-val" class="val-display">0.05s</span></label>
+      <input type="range" id="attack" min="0" max="1" step="0.001" value="0.05">
     </div>
     <div class="control-group">
       <label>Release <span id="release-val" class="val-display">0.25s</span></label>
