@@ -46,6 +46,7 @@
     /* Bypass State */
     body.bypassed .meter-bar { width: 0 !important; }
     body.bypassed .modes, body.bypassed .control-group, body.bypassed .toggles { opacity: 0.3; pointer-events: none; }
+    body.deess-off #deess-group { opacity: 0.3; pointer-events: none; }
 
     /* Status (no media found, page not supported...) */
     #status { display: none; font-size: 11px; color: #aaa; background: #2c2c2c; border-left: 2px solid #ff9f43; padding: 6px 8px; margin-bottom: 15px; }
@@ -106,6 +107,10 @@
     <div class="control-group">
       <label>Release <span id="release-val" class="val-display">0.25s</span></label>
       <input type="range" id="release" min="0" max="1" step="0.01" value="0.25">
+    </div>
+    <div class="control-group" id="deess-group">
+      <label>De-Esser Threshold <span id="deess-val" class="val-display">-30 dB</span></label>
+      <input type="range" id="deEssThreshold" min="-50" max="-10" value="-30">
     </div>
   </div>
 

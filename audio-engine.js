@@ -22,18 +22,15 @@
 
         nodes.preGain = context.createGain();
 
-        nodes.deEsser = context.createBiquadFilter();
-        nodes.deEsser.type = 'peaking';
-        nodes.deEsser.frequency.value = 7000;
-        nodes.deEsser.Q.value = 1.0;
+        nodes.deEsser = window.createAudioKarateDeEsser(context);
 
         nodes.compressor = context.createDynamicsCompressor();
         nodes.compressor.knee.value = 10;
 
         // Chain
         nodes.hpFilter.connect(nodes.preGain);
-        nodes.preGain.connect(nodes.deEsser);
-        nodes.deEsser.connect(nodes.compressor);
+        nodes.preGain.connect(nodes.deEsser.input);
+        nodes.deEsser.output.connect(nodes.compressor);
         nodes.compressor.connect(context.destination);
     }
 
@@ -141,7 +138,7 @@
             // This prevents clicking artifacts
             set(n.preGain.gain, 1); // 0dB
             set(n.hpFilter.frequency, 0); // Off
-            set(n.deEsser.gain, 0); // Off
+            n.deEsser.set(false, s.deEssThreshold, instant); // Off
             set(n.compressor.threshold, 0); // No compression
             set(n.compressor.ratio, 1); // 1:1 ratio
         } else {
@@ -149,7 +146,7 @@
             const linearGain = Math.pow(10, s.preGain / 20);
             set(n.preGain.gain, linearGain);
             set(n.hpFilter.frequency, s.hpFilter ? 80 : 0);
-            set(n.deEsser.gain, s.deEsser ? -6 : 0);
+            n.deEsser.set(s.deEsser, s.deEssThreshold, instant);
             set(n.compressor.threshold, s.threshold);
             set(n.compressor.ratio, s.ratio);
             set(n.compressor.attack, s.attack);

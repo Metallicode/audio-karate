@@ -4,9 +4,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 const presets = {
-    movie: { threshold: -24, ratio: 4, attack: 0.05, release: 0.25, hpFilter: true, deEsser: true },
-    speech: { threshold: -35, ratio: 10, attack: 0.003, release: 0.1, hpFilter: true, deEsser: true },
-    music: { threshold: -10, ratio: 2, attack: 0.1, release: 0.5, hpFilter: false, deEsser: false }
+    movie: { threshold: -24, ratio: 4, attack: 0.05, release: 0.25, hpFilter: true, deEsser: true, deEssThreshold: -30 },
+    speech: { threshold: -35, ratio: 10, attack: 0.003, release: 0.1, hpFilter: true, deEsser: true, deEssThreshold: -35 },
+    music: { threshold: -10, ratio: 2, attack: 0.1, release: 0.5, hpFilter: false, deEsser: false, deEssThreshold: -30 }
 };
 
 const defaults = { mode: 'movie', bypass: false, preGain: 0, ...presets.movie };
@@ -22,7 +22,7 @@ async function init() {
     try {
         await chrome.scripting.executeScript({
             target: { tabId: tab.id, allFrames: true },
-            files: ['audio-engine.js']
+            files: ['de-esser.js', 'audio-engine.js']
         });
     } catch (e) {
         // chrome:// pages, the Web Store, and other pages extensions can't touch
@@ -35,7 +35,7 @@ async function init() {
     // Pick up where this tab left off, otherwise start from the last settings used anywhere
     const states = await runInTab(() => window.AudioKarateEngine && window.AudioKarateEngine.getState());
     const existing = states.find(s => s && s.settings);
-    applyToUI(existing ? existing.settings : loadLastSettings());
+    applyToUI(existing ? { ...defaults, ...existing.settings } : loadLastSettings());
 
     await updateAudioEngine();
     connectToVisualizer();
@@ -66,11 +66,14 @@ function setupListeners() {
         setMode('custom');
         updateAudioEngine();
     };
-    ['threshold', 'ratio', 'attack', 'release'].forEach(id => {
+    ['threshold', 'ratio', 'attack', 'release', 'deEssThreshold'].forEach(id => {
         document.getElementById(id).addEventListener('input', onCustomChange);
     });
     document.getElementById('hpFilter').addEventListener('change', onCustomChange);
-    document.getElementById('deEsser').addEventListener('change', onCustomChange);
+    document.getElementById('deEsser').addEventListener('change', (e) => {
+        document.body.classList.toggle('deess-off', !e.target.checked);
+        onCustomChange();
+    });
 }
 
 function applyPreset(type) {
@@ -95,6 +98,8 @@ function applyToUI(s) {
     document.getElementById('release').value = s.release;
     document.getElementById('hpFilter').checked = s.hpFilter;
     document.getElementById('deEsser').checked = s.deEsser;
+    document.getElementById('deEssThreshold').value = s.deEssThreshold;
+    document.body.classList.toggle('deess-off', !s.deEsser);
     setMode(s.mode);
     updateLabels();
 }
@@ -105,6 +110,7 @@ function updateLabels() {
     document.getElementById('ratio-val').innerText = document.getElementById('ratio').value + ':1';
     document.getElementById('attack-val').innerText = document.getElementById('attack').value + 's';
     document.getElementById('release-val').innerText = document.getElementById('release').value + 's';
+    document.getElementById('deess-val').innerText = document.getElementById('deEssThreshold').value + ' dB';
 }
 
 function readSettings() {
@@ -117,7 +123,8 @@ function readSettings() {
         attack: parseFloat(document.getElementById('attack').value),
         release: parseFloat(document.getElementById('release').value),
         hpFilter: document.getElementById('hpFilter').checked,
-        deEsser: document.getElementById('deEsser').checked
+        deEsser: document.getElementById('deEsser').checked,
+        deEssThreshold: parseFloat(document.getElementById('deEssThreshold').value)
     };
 }
 
