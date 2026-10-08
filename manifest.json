@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Audio Karate: Compressor & EQ",
-  "version": "1.1",
+  "version": "1.2",
   "description": "Advanced Audio Compression & EQ.",
   "permissions": ["activeTab", "scripting"],
   "action": {
